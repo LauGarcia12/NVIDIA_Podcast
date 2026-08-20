@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NVIDIA Physical AI Podcast Player</title>
+<style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #141414;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #ffffff;
+      overflow: hidden;
+    }
+    .carousel-container {
+      max-width: 100%;
+      margin: 0 auto;
+      background: #141414;
+      padding: 24px;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #76b900;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px rgba(118, 185, 0, 0.3);
+    }
+    .header p {
+      margin: 5px 0 0 0;
+      font-size: 0.8rem;
+      color: #888888;
+    }
+    .track-title {
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ffffff;
+      min-height: 24px;
+    }
+ 
+    /* Player Interface Controls */
+    .player-interface {
+      background: #0d0d0d;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #222222;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .play-btn {
+      background: #76b900;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin-bottom: 15px;
+      outline: none;
+    }
+    .play-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(118, 185, 0, 0.6);
+    }
+    .play-btn svg {
+      fill: #0d0d0d;
+      width: 20px;
+      height: 20px;
+    }
+ 
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .time-label {
+      font-size: 0.75rem;
+      color: #888888;
+      width: 35px;
+    }
+    .time-label.right {
+      text-align: right;
+    }
+    .progress-bar {
+      flex-grow: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: #333333;
+      outline: none;
+      cursor: pointer;
+    }
+    .progress-bar::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #76b900;
+      box-shadow: 0 0 6px #76b900;
+      transition: transform 0.1s;
+    }
+    .progress-bar::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+ 
+    /* Bottom Slider Navigation */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #222222;
+      padding-top: 15px;
+    }
+    .nav-btn {
+      background: #1e1e1e;
+      color: #76b900;
+      border: 1px solid #76b900;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover {
+      background: #76b900;
+      color: #0d0d0d;
+      box-shadow: 0 0 12px rgba(118, 185, 0, 0.6);
+    }
+    .indicators {
+      display: flex;
+      gap: 10px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      background: #333333;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .dot.active {
+      background: #76b900;
+      box-shadow: 0 0 8px #76b900;
+    }
+</style>
+</head>
+<body>
+ 
+  <div class="carousel-container">
+<div class="header">
+<h2>NVIDIA Physical AI Podcast</h2>
+<p>Interactive Learning Path Carousel</p>
+</div>
+ 
+    <!-- Active Track Title -->
+<div class="track-title" id="track-title">Loading track...</div>
+ 
+    <!-- Central Audio Player controls -->
+<div class="player-interface">
+<button class="play-btn" id="play-btn" onclick="togglePlay()">
+<!-- Play SVG Icon -->
+<svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+</button>
+ 
+      <div class="progress-container">
+<span class="time-label" id="current-time">0:00</span>
+<input type="range" class="progress-bar" id="progress-bar" value="0" min="0" max="100" step="0.1" oninput="seek(this.value)">
+<span class="time-label right" id="total-time">--:--</span>
+</div>
+</div>
+ 
+    <!-- Carousel Nav controls -->
+<div class="controls">
+<button class="nav-btn" onclick="prevSlide()" aria-label="Previous Slide">&#10094;</button>
+<div class="indicators">
+<span class="dot active" onclick="setSlide(0)"></span>
+<span class="dot" onclick="setSlide(1)"></span>
+<span class="dot" onclick="setSlide(2)"></span>
+</div>
+<button class="nav-btn" onclick="nextSlide()" aria-label="Next Slide">&#10095;</button>
+</div>
+</div>
+ 
+  <!-- Audio Element (Uses SharePoint Direct Pathing) -->
+<audio id="audio-player" preload="metadata"></audio>
+ 
+  <script>
+    const audio = document.getElementById('audio-player');
+    const playBtn = document.getElementById('play-btn');
+    const playIcon = document.getElementById('play-icon');
+    const progressBar = document.getElementById('progress-bar');
+    const currentTimeEl = document.getElementById('current-time');
+    const totalTimeEl = document.getElementById('total-time');
+    const trackTitleEl = document.getElementById('track-title');
+    const dots = document.querySelectorAll('.dot');
+ 
+    let currentIdx = 0;
+    let isPlaying = false;
+ 
+    // Relative paths: served via GitHub Pages as plain static files (no
+    // SharePoint blob-sandboxing), so a bare filename in the same folder
+    // as this document resolves normally.
+    const tracks = [
+      {
+        title: "Chapter 1: Introduction to Physical AI",
+        src: "Chapter1.mp3"
+      },
+      {
+        title: "Chapter 2: Deep Dive & Architecture",
+        src: "Chapter2.mp3"
+      },
+      {
+        title: "Chapter 3: Future Horizons & Deployment",
+        src: "Chapter3.mp3"
+      }
+    ];
+ 
+    function loadTrack(index) {
+      currentIdx = index;
+      const track = tracks[index];
+ 
+      // Update Title and dot indicators
+      trackTitleEl.textContent = track.title;
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+ 
+      // Update audio source
+      audio.src = track.src;
+      audio.load();
+ 
+      // Reset progress sliders & timers
+      progressBar.value = 0;
+      currentTimeEl.textContent = "0:00";
+      totalTimeEl.textContent = "--:--";
+ 
+      if (isPlaying) {
+        audio.play().catch(e => console.log("Play failed: ", e));
+      }
+    }
+ 
+    function togglePlay() {
+      if (isPlaying) {
+        audio.pause();
+        playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>'; // Play icon SVG
+        isPlaying = false;
+      } else {
+        audio.play().then(() => {
+          playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Pause icon SVG
+          isPlaying = true;
+        }).catch(err => {
+          console.log("Audio play blocked by browser auth: ", err);
+        });
+      }
+    }
+ 
+    // Convert time integers into clean minutes:seconds strings
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "--:--";
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return mins + ":" + (secs < 10 ? "0" : "") + secs;
+    }
+ 
+    // Trigger metadata calculations as soon as the audio becomes available
+    audio.addEventListener('loadedmetadata', () => {
+      totalTimeEl.textContent = formatTime(audio.duration);
+    });
+ 
+    audio.addEventListener('durationchange', () => {
+      totalTimeEl.textContent = formatTime(audio.duration);
+    });
+
+    // Diagnostics only (no UI change): if a track fails to load, log the
+    // resolved URL and error code so the cause can be identified from the
+    // browser console (F12) without altering the player.
+    audio.addEventListener('error', () => {
+      const codes = {1:'ABORTED',2:'NETWORK',3:'DECODE',4:'SRC_NOT_SUPPORTED'};
+      const err = audio.error;
+      console.error('Audio failed to load.', {
+        resolvedUrl: audio.currentSrc,
+        code: err ? codes[err.code] || err.code : 'unknown'
+      });
+    });
+ 
+    // Update progress seek-bar and time labels continuously during active playback
+    audio.addEventListener('timeupdate', () => {
+      if (!isNaN(audio.duration)) {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressBar.value = percent;
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+      }
+    });
+ 
+    // Seek track
+    function seek(value) {
+      if (!isNaN(audio.duration)) {
+        const targetTime = (value / 100) * audio.duration;
+        audio.currentTime = targetTime;
+      }
+    }
+ 
+    // Slide navigation
+    function nextSlide() {
+      let index = (currentIdx + 1) % tracks.length;
+      loadTrack(index);
+    }
+ 
+    function prevSlide() {
+      let index = (currentIdx - 1 + tracks.length) % tracks.length;
+      loadTrack(index);
+    }
+ 
+    function setSlide(index) {
+      loadTrack(index);
+    }
+ 
+    // Automatically load Chapter 1 on startup
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTrack(0);
+    });
+</script>
+</body>
+</html>
