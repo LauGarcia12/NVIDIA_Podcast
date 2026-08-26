@@ -4,118 +4,199 @@
 <meta charset="UTF-8">
 <title>NVIDIA Physical AI Podcast Player</title>
 <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #141414;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #ffffff;
-      overflow: hidden;
-    }
-    .carousel-container {
-      max-width: 100%;
-      margin: 0 auto;
-      background: #141414;
-      padding: 24px;
-      box-sizing: border-box;
-      position: relative;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .header h2 {
-      margin: 0;
-      font-size: 1.15rem;
-      color: #76b900;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      text-shadow: 0 0 10px rgba(118, 185, 0, 0.3);
-    }
-    .header p {
-      margin: 5px 0 0 0;
-      font-size: 0.8rem;
-      color: #888888;
-    }
-    .track-title {
-      font-size: 1rem;
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 20px;
-      color: #ffffff;
-      min-height: 24px;
-    }
+  :root {
+    --nvidia-green: #76b900;
+    --nvidia-green-glow: rgba(118, 185, 0, 0.35);
+    --bg-deep: #0a0a0a;
+    --border: #232323;
+    --text-dim: #8a8a8a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle at 50% 0%, #1a1f14 0%, var(--bg-deep) 60%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #ffffff;
+    overflow: hidden;
+  }
+  .carousel-container {
+    max-width: 460px;
+    margin: 0 auto;
+    background: linear-gradient(160deg, #141414 0%, #0c0c0c 100%);
+    padding: 28px 24px;
+    box-sizing: border-box;
+    position: relative;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 0 1px rgba(118, 185, 0, 0.05), 0 20px 40px -20px rgba(0, 0, 0, 0.8);
+  }
+  .carousel-container::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 12%; right: 12%;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, var(--nvidia-green), transparent);
+    opacity: 0.7;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .header-icon {
+    width: 30px;
+    height: 30px;
+    color: var(--nvidia-green);
+    filter: drop-shadow(0 0 6px var(--nvidia-green-glow));
+  }
+  .header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--nvidia-green);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 12px var(--nvidia-green-glow);
+  }
+  .header p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+  .track-title {
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 16px;
+    color: #ffffff;
+    min-height: 24px;
+    transition: opacity 0.25s ease;
+  }
 
-    /* Player Interface Controls */
-    .player-interface {
-      background: #0d0d0d;
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid #222222;
-      margin-bottom: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .player-interface audio {
-      width: 100%;
-    }
+  /* Now-playing equalizer */
+  .equalizer {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 4px;
+    height: 18px;
+    margin-bottom: 14px;
+  }
+  .equalizer span {
+    width: 3px;
+    background: var(--nvidia-green);
+    border-radius: 2px;
+    height: 4px;
+    opacity: 0.35;
+    transition: opacity 0.3s ease;
+  }
+  .equalizer.playing span {
+    opacity: 1;
+    animation: bounce 0.9s ease-in-out infinite;
+  }
+  .equalizer.playing span:nth-child(1) { animation-delay: 0s; }
+  .equalizer.playing span:nth-child(2) { animation-delay: 0.15s; }
+  .equalizer.playing span:nth-child(3) { animation-delay: 0.3s; }
+  .equalizer.playing span:nth-child(4) { animation-delay: 0.45s; }
+  .equalizer.playing span:nth-child(5) { animation-delay: 0.1s; }
+  @keyframes bounce {
+    0%, 100% { height: 4px; }
+    50% { height: 18px; }
+  }
 
-    /* Bottom Slider Navigation */
-    .controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid #222222;
-      padding-top: 15px;
-    }
-    .nav-btn {
-      background: #1e1e1e;
-      color: #76b900;
-      border: 1px solid #76b900;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-    .nav-btn:hover {
-      background: #76b900;
-      color: #0d0d0d;
-      box-shadow: 0 0 12px rgba(118, 185, 0, 0.6);
-    }
-    .indicators {
-      display: flex;
-      gap: 10px;
-    }
-    .dot {
-      width: 10px;
-      height: 10px;
-      background: #333333;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: background 0.3s ease, box-shadow 0.3s ease;
-    }
-    .dot.active {
-      background: #76b900;
-      box-shadow: 0 0 8px #76b900;
-    }
+  /* Player Interface Controls */
+  .player-interface {
+    background: #0d0d0d;
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  }
+  .player-interface audio {
+    width: 100%;
+    accent-color: var(--nvidia-green);
+    color-scheme: dark;
+  }
+
+  /* Bottom Slider Navigation */
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  .nav-btn {
+    background: #1a1a1a;
+    color: var(--nvidia-green);
+    border: 1px solid var(--nvidia-green);
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  .nav-btn:hover {
+    background: var(--nvidia-green);
+    color: #0d0d0d;
+    box-shadow: 0 0 14px var(--nvidia-green-glow);
+    transform: scale(1.05);
+  }
+  .indicators {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    background: #333333;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .dot.active {
+    width: 22px;
+    border-radius: 4px;
+    background: var(--nvidia-green);
+    box-shadow: 0 0 10px var(--nvidia-green-glow);
+  }
 </style>
 </head>
 <body>
 
   <div class="carousel-container">
 <div class="header">
+<svg class="header-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4Z" stroke="currentColor" stroke-width="1.6"/>
+  <path d="M5 11v1a7 7 0 0 0 14 0v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M12 19v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+</svg>
 <h2>NVIDIA Physical AI Podcast</h2>
 <p>Interactive Learning Path Carousel</p>
 </div>
 
     <!-- Active Track Title -->
 <div class="track-title" id="track-title">Loading track...</div>
+
+    <!-- Now-playing equalizer -->
+<div class="equalizer" id="equalizer">
+<span></span><span></span><span></span><span></span><span></span>
+</div>
 
     <!-- Central Audio Player (native browser controls) -->
 <div class="player-interface">
@@ -138,6 +219,7 @@
     const audio = document.getElementById('audio-player');
     const trackTitleEl = document.getElementById('track-title');
     const dots = document.querySelectorAll('.dot');
+    const equalizer = document.getElementById('equalizer');
 
     let currentIdx = 0;
 
@@ -164,8 +246,13 @@
       currentIdx = index;
       const track = tracks[index];
 
-      // Update Title and dot indicators
-      trackTitleEl.textContent = track.title;
+      // Fade the title out/in on track change
+      trackTitleEl.style.opacity = 0;
+      setTimeout(() => {
+        trackTitleEl.textContent = track.title;
+        trackTitleEl.style.opacity = 1;
+      }, 150);
+
       dots.forEach((dot, i) => {
         dot.classList.toggle('active', i === index);
       });
@@ -178,6 +265,11 @@
         audio.play().catch(e => console.log("Play failed: ", e));
       }
     }
+
+    // Equalizer only animates while audio is actually playing
+    audio.addEventListener('play', () => equalizer.classList.add('playing'));
+    audio.addEventListener('pause', () => equalizer.classList.remove('playing'));
+    audio.addEventListener('ended', () => equalizer.classList.remove('playing'));
 
     // Slide navigation
     function nextSlide() {
